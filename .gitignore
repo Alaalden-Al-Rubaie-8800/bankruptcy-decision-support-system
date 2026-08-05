@@ -1,0 +1,23 @@
+# Python virtual environments
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Environment secrets
+.env
+
+# Node.js
+node_modules/
+.next/
+
+# Generated files
+backend/uploads/
+backend/generated_reports/
+
+# IDE and operating system
+.vscode/
+.DS_Store
+Thumbs.db
