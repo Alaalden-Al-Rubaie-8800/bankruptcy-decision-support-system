@@ -1,16 +1,14 @@
+"""موديل المستخدم وتحديد دوره داخل النظام."""
+
 from datetime import datetime
-from sqlalchemy import Boolean, DateTime, Integer, String, func
+from sqlalchemy import Boolean, DateTime, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 from app.database.session import Base
 
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(
-        Integer,
-        primary_key=True,
-        index=True,
-    )
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
 
     full_name: Mapped[str] = mapped_column(
         String(150),
@@ -29,10 +27,18 @@ class User(Base):
         nullable=False,
     )
 
+    role: Mapped[str] = mapped_column(
+        String(30),
+        nullable=False,
+        default="financial_user",
+        server_default="financial_user",
+    )
+
     is_active: Mapped[bool] = mapped_column(
         Boolean,
-        default=True,
         nullable=False,
+        default=True,
+        server_default="true",
     )
 
     created_at: Mapped[datetime] = mapped_column(
