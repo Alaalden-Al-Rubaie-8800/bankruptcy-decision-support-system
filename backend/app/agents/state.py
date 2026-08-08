@@ -3,8 +3,10 @@
 from typing import Any, TypedDict
 
 class AgentState(TypedDict, total=False):
+    user_id: int
     company_id: int
     financial_record_id: int
+    prediction_id: int
 
     financial_data: dict[str, Any]
     validated_data: dict[str, Any]

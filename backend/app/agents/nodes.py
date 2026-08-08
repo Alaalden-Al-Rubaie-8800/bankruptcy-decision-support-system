@@ -7,6 +7,8 @@ from app.schemas.recommendation import RecommendationCreate
 from app.services.financial_record_service import get_financial_record
 from app.services.prediction_service import create_prediction
 from app.services.recommendation_service import create_recommendation
+from app.schemas.analysis_history import AnalysisHistoryCreate
+from app.services.analysis_history_service import create_analysis_history
 
 def load_financial_data(state: AgentState, db: Session) -> AgentState:
     record = get_financial_record(db, state["financial_record_id"])
@@ -155,6 +157,7 @@ def save_analysis_results(state: AgentState, db: Session) -> AgentState:
     )
 
     prediction = create_prediction(db, prediction_data)
+    state["prediction_id"] = prediction.id
 
     for item in state["recommendations"]:
         recommendation_data = RecommendationCreate(
@@ -168,5 +171,25 @@ def save_analysis_results(state: AgentState, db: Session) -> AgentState:
         create_recommendation(db, recommendation_data)
 
     state["status"] = "saved"
+    state["error"] = None
+    return state
+
+def save_analysis_history(state: AgentState, db: Session) -> AgentState:
+    if not state.get("user_id") or not state.get("prediction_id"):
+        state["status"] = "failed"
+        state["error"] = "Analysis history data is missing"
+        return state
+
+    history_data = AnalysisHistoryCreate(
+        user_id=state["user_id"],
+        company_id=state["company_id"],
+        financial_record_id=state["financial_record_id"],
+        prediction_id=state["prediction_id"],
+        status="completed",
+    )
+
+    create_analysis_history(db, history_data)
+
+    state["status"] = "completed"
     state["error"] = None
     return state

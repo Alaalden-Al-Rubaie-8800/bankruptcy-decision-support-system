@@ -1,4 +1,4 @@
-"""تشغيل AI Agent باستخدام LangGraph مع حفظ النتائج."""
+"""تشغيل AI Agent باستخدام LangGraph مع حفظ النتائج وسجل التحليل."""
 
 from langgraph.graph import END, START, StateGraph
 from sqlalchemy.orm import Session
@@ -7,6 +7,7 @@ from app.agents.nodes import (
     generate_recommendations,
     load_financial_data,
     predict_bankruptcy,
+    save_analysis_history,
     save_analysis_results,
     validate_financial_data,
 )
@@ -49,6 +50,11 @@ def build_agent(db: Session):
     graph.add_node(
         "save_analysis_results",
         lambda state: save_analysis_results(state, db),
+    )
+
+    graph.add_node(
+        "save_analysis_history",
+        lambda state: save_analysis_history(state, db),
     )
 
     graph.add_edge(START, "load_financial_data")
@@ -98,14 +104,28 @@ def build_agent(db: Session):
         },
     )
 
-    graph.add_edge("save_analysis_results", END)
+    graph.add_conditional_edges(
+        "save_analysis_results",
+        next_step,
+        {
+            "continue": "save_analysis_history",
+            "end": END,
+        },
+    )
+
+    graph.add_edge("save_analysis_history", END)
 
     return graph.compile()
 
-def run_agent(financial_record_id: int, db: Session) -> AgentState:
+def run_agent(
+    financial_record_id: int,
+    user_id: int,
+    db: Session,
+) -> AgentState:
     agent = build_agent(db)
 
     state: AgentState = {
+        "user_id": user_id,
         "financial_record_id": financial_record_id,
         "status": "started",
         "error": None,

@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 from app.agents.workflow import run_agent
 from app.core.dependencies import get_current_user
 from app.database.session import get_db
+from app.schemas.analysis_history import AnalysisHistoryResponse
+from app.services.analysis_history_service import get_user_analysis_history
 
 router = APIRouter(
     prefix="/analysis",
@@ -20,8 +22,13 @@ class AnalysisRequest(BaseModel):
 def run_analysis(
     data: AnalysisRequest,
     db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
 ):
-    result = run_agent(data.financial_record_id, db)
+    result = run_agent(
+        financial_record_id=data.financial_record_id,
+        user_id=current_user.id,
+        db=db,
+    )
 
     if result.get("status") == "failed":
         raise HTTPException(
@@ -30,3 +37,16 @@ def run_analysis(
         )
 
     return result
+
+@router.get(
+    "/history",
+    response_model=list[AnalysisHistoryResponse],
+)
+def get_analysis_history(
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+):
+    return get_user_analysis_history(
+        db,
+        current_user.id,
+    )
