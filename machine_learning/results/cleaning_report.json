@@ -1,0 +1,44 @@
+{
+  "raw_rows": 19486,
+  "raw_columns": 72,
+  "feature_count": 63,
+  "missing_before": 73652,
+  "missing_after": 0,
+  "duplicates": 0,
+  "infinite_before": 0,
+  "infinite_after": 0,
+  "train_rows": 8587,
+  "validation_rows": 5045,
+  "test_rows": 5854,
+  "class_distribution_train": {
+    "0": {
+      "count": 8527,
+      "percentage": 99.30126936066146
+    },
+    "1": {
+      "count": 60,
+      "percentage": 0.698730639338535
+    }
+  },
+  "class_distribution_validation": {
+    "0": {
+      "count": 5019,
+      "percentage": 99.48463825569871
+    },
+    "1": {
+      "count": 26,
+      "percentage": 0.5153617443012884
+    }
+  },
+  "class_distribution_test": {
+    "0": {
+      "count": 5840,
+      "percentage": 99.76084728390843
+    },
+    "1": {
+      "count": 14,
+      "percentage": 0.23915271609156133
+    }
+  },
+  "imputation_strategy": "Median values computed from TRAIN split only"
+}
