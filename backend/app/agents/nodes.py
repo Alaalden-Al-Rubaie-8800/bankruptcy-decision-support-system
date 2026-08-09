@@ -9,6 +9,7 @@ from app.services.prediction_service import create_prediction
 from app.services.recommendation_service import create_recommendation
 from app.schemas.analysis_history import AnalysisHistoryCreate
 from app.services.analysis_history_service import create_analysis_history
+from machine_learning.src.ml_service import analyze_financial_ratios
 
 def load_financial_data(state: AgentState, db: Session) -> AgentState:
     record = get_financial_record(db, state["financial_record_id"])
@@ -66,43 +67,58 @@ def validate_financial_data(state: AgentState) -> AgentState:
     return state
 
 def predict_bankruptcy(state: AgentState) -> AgentState:
-    if not state.get("validated_data"):
+    yearly_ratios = state.get("yearly_ratios")
+
+    if not yearly_ratios:
         state["status"] = "failed"
-        state["error"] = "Validated data is missing"
+        state["error"] = "Three years of financial ratios are required"
         return state
 
-    # مؤقت حتى يتم ربط مودل ML الحقيقي
-    probability = 0.18
+    try:
+        result = analyze_financial_ratios(yearly_ratios)
 
-    if probability < 0.30:
-        risk_level = "Low"
-    elif probability < 0.70:
-        risk_level = "Medium"
-    else:
-        risk_level = "High"
+        prediction = result["prediction"]
+        explanation = result["explanation"]
 
-    state["bankruptcy_probability"] = probability
-    state["risk_level"] = risk_level
-    state["model_version"] = "placeholder-v1"
-    state["status"] = "predicted"
-    state["error"] = None
+        state["bankruptcy_probability"] = prediction[
+            "bankruptcy_probability"
+        ]
+
+        state["predicted_class"] = prediction["predicted_class"]
+        state["risk_level"] = prediction["risk_level"]
+        state["model_version"] = prediction["model_version"]
+
+        state["top_risk_factors"] = explanation[
+            "top_risk_factors"
+        ]
+
+        state["status"] = "predicted"
+        state["error"] = None
+
+    except (ValueError, TypeError, KeyError) as exc:
+        state["status"] = "failed"
+        state["error"] = str(exc)
+
     return state
 
 def explain_prediction(state: AgentState) -> AgentState:
-    data = state.get("validated_data")
+    top_factors = state.get("top_risk_factors")
     risk_level = state.get("risk_level")
 
-    if not data or not risk_level:
+    if not top_factors or not risk_level:
         state["status"] = "failed"
-        state["error"] = "Prediction data is missing"
+        state["error"] = "Prediction explanation is missing"
         return state
+
+    factors_text = ", ".join(
+        f"{factor['ratio_name']} ({factor['ratio_code']}) - "
+        f"{factor['year_offset']}"
+        for factor in top_factors[:5]
+    )
 
     state["explanation"] = (
         f"Risk level is {risk_level}. "
-        f"Total assets are {data['total_assets']}, "
-        f"total liabilities are {data['total_liabilities']}, "
-        f"net income is {data['net_income']}, "
-        f"and operating cash flow is {data['operating_cash_flow']}."
+        f"The most influential financial factors are: {factors_text}."
     )
 
     state["status"] = "explained"
@@ -150,7 +166,10 @@ def save_analysis_results(state: AgentState, db: Session) -> AgentState:
     prediction_data = PredictionCreate(
         company_id=state["company_id"],
         financial_record_id=state["financial_record_id"],
-        bankruptcy_probability=state["bankruptcy_probability"],
+        bankruptcy_probability=round(
+            state["bankruptcy_probability"],
+            4,
+        ),
         risk_level=state["risk_level"],
         model_version=state["model_version"],
         explanation=state["explanation"],

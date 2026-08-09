@@ -1,4 +1,4 @@
-"""مسار تشغيل التحليل الكامل بواسطة AI Agent."""
+"""مسارات تشغيل التحليل وعرض سجل التحليلات."""
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -9,14 +9,43 @@ from app.database.session import get_db
 from app.schemas.analysis_history import AnalysisHistoryResponse
 from app.services.analysis_history_service import get_user_analysis_history
 
+
 router = APIRouter(
     prefix="/analysis",
     tags=["Analysis"],
-    dependencies=[Depends(get_current_user)],
 )
+
+class FinancialRatios(BaseModel):
+    ROA: float
+    ROE: float
+    ROS: float
+    L1: float
+    L2: float
+    L3: float
+    ATD: float
+    DTR: float
+    TAT: float
+    ITD: float
+    DA: float
+    DE: float
+    FL: float
+    ROI: float
+    DIR: float
+    DCR: float
+    ACR: float
+    LP: float
+    BL: float
+    LRR: float
+    WAR: float
+
+class YearlyRatios(BaseModel):
+    t_minus_3: FinancialRatios
+    t_minus_2: FinancialRatios
+    t_minus_1: FinancialRatios
 
 class AnalysisRequest(BaseModel):
     financial_record_id: int
+    yearly_ratios: YearlyRatios
 
 @router.post("/run")
 def run_analysis(
@@ -27,6 +56,7 @@ def run_analysis(
     result = run_agent(
         financial_record_id=data.financial_record_id,
         user_id=current_user.id,
+        yearly_ratios=data.yearly_ratios.model_dump(),
         db=db,
     )
 

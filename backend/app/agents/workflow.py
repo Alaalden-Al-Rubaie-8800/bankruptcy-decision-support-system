@@ -120,6 +120,7 @@ def build_agent(db: Session):
 def run_agent(
     financial_record_id: int,
     user_id: int,
+    yearly_ratios: dict[str, dict[str, float | None]],
     db: Session,
 ) -> AgentState:
     agent = build_agent(db)
@@ -127,6 +128,7 @@ def run_agent(
     state: AgentState = {
         "user_id": user_id,
         "financial_record_id": financial_record_id,
+        "yearly_ratios": yearly_ratios,
         "status": "started",
         "error": None,
     }
