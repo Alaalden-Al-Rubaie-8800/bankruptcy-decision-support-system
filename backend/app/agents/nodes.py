@@ -1,15 +1,19 @@
-"""خطوات AI Agent من قراءة البيانات حتى حفظ نتائج التحليل."""
+"""خطوات AI Agent من قراءة البيانات حتى حفظ النتائج والتقرير."""
 
 from sqlalchemy.orm import Session
+
 from app.agents.state import AgentState
+from app.schemas.analysis_history import AnalysisHistoryCreate
 from app.schemas.prediction import PredictionCreate
 from app.schemas.recommendation import RecommendationCreate
+from app.services.analysis_history_service import create_analysis_history
+from app.services.company_service import get_company
 from app.services.financial_record_service import get_financial_record
 from app.services.prediction_service import create_prediction
 from app.services.recommendation_service import create_recommendation
-from app.schemas.analysis_history import AnalysisHistoryCreate
-from app.services.analysis_history_service import create_analysis_history
+from decision_support.decision_support_service import process_prediction
 from machine_learning.src.ml_service import analyze_financial_ratios
+
 
 def load_financial_data(state: AgentState, db: Session) -> AgentState:
     record = get_financial_record(db, state["financial_record_id"])
@@ -19,7 +23,13 @@ def load_financial_data(state: AgentState, db: Session) -> AgentState:
         state["error"] = "Financial record not found"
         return state
 
+    company = get_company(db, record.company_id)
+
     state["company_id"] = record.company_id
+    state["company_data"] = {
+        "id": record.company_id,
+        "name": company.name if company else f"Company {record.company_id}",
+    }
 
     state["financial_data"] = {
         "company_id": record.company_id,
@@ -37,12 +47,19 @@ def load_financial_data(state: AgentState, db: Session) -> AgentState:
     state["error"] = None
     return state
 
+
 def validate_financial_data(state: AgentState) -> AgentState:
     data = state.get("financial_data")
+    yearly_ratios = state.get("yearly_ratios")
 
     if not data:
         state["status"] = "failed"
         state["error"] = "Financial data is missing"
+        return state
+
+    if not yearly_ratios:
+        state["status"] = "failed"
+        state["error"] = "Three years of financial ratios are required"
         return state
 
     required_fields = [
@@ -66,6 +83,7 @@ def validate_financial_data(state: AgentState) -> AgentState:
     state["error"] = None
     return state
 
+
 def predict_bankruptcy(state: AgentState) -> AgentState:
     yearly_ratios = state.get("yearly_ratios")
 
@@ -76,30 +94,26 @@ def predict_bankruptcy(state: AgentState) -> AgentState:
 
     try:
         result = analyze_financial_ratios(yearly_ratios)
-
         prediction = result["prediction"]
         explanation = result["explanation"]
 
         state["bankruptcy_probability"] = prediction[
             "bankruptcy_probability"
         ]
-
         state["predicted_class"] = prediction["predicted_class"]
         state["risk_level"] = prediction["risk_level"]
         state["model_version"] = prediction["model_version"]
-
-        state["top_risk_factors"] = explanation[
-            "top_risk_factors"
-        ]
+        state["top_risk_factors"] = explanation["top_risk_factors"]
 
         state["status"] = "predicted"
         state["error"] = None
 
-    except (ValueError, TypeError, KeyError) as exc:
+    except (ValueError, TypeError, KeyError, OSError) as exc:
         state["status"] = "failed"
         state["error"] = str(exc)
 
     return state
+
 
 def explain_prediction(state: AgentState) -> AgentState:
     top_factors = state.get("top_risk_factors")
@@ -125,42 +139,59 @@ def explain_prediction(state: AgentState) -> AgentState:
     state["error"] = None
     return state
 
-def generate_recommendations(state: AgentState) -> AgentState:
-    risk_level = state.get("risk_level")
 
-    if not risk_level:
+def generate_recommendations(state: AgentState) -> AgentState:
+    company = state.get("company_data")
+
+    required_values = [
+        state.get("bankruptcy_probability"),
+        state.get("predicted_class"),
+        state.get("risk_level"),
+        state.get("model_version"),
+        state.get("top_risk_factors"),
+    ]
+
+    if not company or any(value is None for value in required_values):
         state["status"] = "failed"
-        state["error"] = "Risk level is missing"
+        state["error"] = "Decision support input is incomplete"
         return state
 
-    if risk_level == "Low":
-        recommendations = [{
-            "title": "Maintain Financial Stability",
-            "description": "Continue controlling liabilities and maintain positive cash flow.",
-            "priority": "Medium",
-            "action_category": "Financial Management",
-        }]
+    prediction = {
+        "bankruptcy_probability": state["bankruptcy_probability"],
+        "predicted_class": state["predicted_class"],
+        "risk_level": state["risk_level"],
+        "model_version": state["model_version"],
+        "top_risk_factors": state["top_risk_factors"],
+    }
 
-    elif risk_level == "Medium":
-        recommendations = [{
-            "title": "Reduce Financial Pressure",
-            "description": "Reduce liabilities and improve operating cash flow.",
-            "priority": "High",
-            "action_category": "Financial Management",
-        }]
+    try:
+        result = process_prediction(
+            company=company,
+            prediction=prediction,
+        )
 
-    else:
-        recommendations = [{
-            "title": "Immediate Financial Action",
-            "description": "Reduce debt, control expenses, and improve liquidity immediately.",
-            "priority": "Critical",
-            "action_category": "Risk Management",
-        }]
+        state["recommendations"] = result["recommendations"]
 
-    state["recommendations"] = recommendations
-    state["status"] = "recommendations_generated"
-    state["error"] = None
+        report = result["report"]
+        report_id = report["report_id"]
+
+        state["report"] = {
+            "report_id": report_id,
+            "status": report["status"],
+            "filename": report["filename"],
+            "view_url": f"/analysis/reports/{report_id}",
+            "download_url": f"/analysis/reports/{report_id}/download",
+        }
+
+        state["status"] = "recommendations_generated"
+        state["error"] = None
+
+    except (ValueError, TypeError, KeyError, OSError) as exc:
+        state["status"] = "failed"
+        state["error"] = str(exc)
+
     return state
+
 
 def save_analysis_results(state: AgentState, db: Session) -> AgentState:
     prediction_data = PredictionCreate(
@@ -192,6 +223,7 @@ def save_analysis_results(state: AgentState, db: Session) -> AgentState:
     state["status"] = "saved"
     state["error"] = None
     return state
+
 
 def save_analysis_history(state: AgentState, db: Session) -> AgentState:
     if not state.get("user_id") or not state.get("prediction_id"):

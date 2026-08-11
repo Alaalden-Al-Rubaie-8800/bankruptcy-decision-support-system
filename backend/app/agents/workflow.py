@@ -2,6 +2,7 @@
 
 from langgraph.graph import END, START, StateGraph
 from sqlalchemy.orm import Session
+
 from app.agents.nodes import (
     explain_prediction,
     generate_recommendations,
@@ -13,11 +14,13 @@ from app.agents.nodes import (
 )
 from app.agents.state import AgentState
 
+
 def next_step(state: AgentState) -> str:
     if state.get("status") == "failed":
         return "end"
 
     return "continue"
+
 
 def build_agent(db: Session):
     graph = StateGraph(AgentState)
@@ -116,6 +119,7 @@ def build_agent(db: Session):
     graph.add_edge("save_analysis_history", END)
 
     return graph.compile()
+
 
 def run_agent(
     financial_record_id: int,

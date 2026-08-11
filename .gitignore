@@ -44,3 +44,7 @@ build/
 
 # Generated Python files
 *.egg-info/
+
+# Generated decision support reports
+decision_support/reports/generated_reports/*
+!decision_support/reports/generated_reports/.gitkeep
