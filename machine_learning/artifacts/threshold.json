@@ -1,0 +1,5 @@
+{
+  "threshold": 0.09467011042967974,
+  "selection_metric": "F2 on validation",
+  "reason": "F2 gives more weight to recall, suitable for early-warning bankruptcy detection"
+}

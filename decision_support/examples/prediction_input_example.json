@@ -1,0 +1,18 @@
+{
+  "company": {
+    "id": "COMP-0001",
+    "name": "شركة تجريبية"
+  },
+  "prediction": {
+    "bankruptcy_probability": 0.74,
+    "predicted_class": 1,
+    "risk_level": "high",
+    "threshold_used": 0.09467011042967974,
+    "model_version": "1.0.0",
+    "top_risk_factors": [
+      "t_minus_1_feature_12",
+      "t_minus_1_feature_05",
+      "t_minus_1_feature_18"
+    ]
+  }
+}
