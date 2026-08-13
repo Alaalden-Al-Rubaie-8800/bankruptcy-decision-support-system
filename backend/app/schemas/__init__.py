@@ -12,6 +12,7 @@ from app.schemas.financial_record import (
 )
 from app.schemas.prediction import PredictionCreate, PredictionResponse
 from app.schemas.recommendation import RecommendationCreate, RecommendationResponse
+from app.schemas.report import ReportCreate, ReportResponse
 from app.schemas.user import UserCreate, UserResponse, UserUpdate
 
 __all__ = [
@@ -27,6 +28,8 @@ __all__ = [
     "PredictionResponse",
     "RecommendationCreate",
     "RecommendationResponse",
+    "ReportCreate",
+    "ReportResponse",
     "UserCreate",
     "UserResponse",
     "UserUpdate",

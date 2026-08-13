@@ -1,4 +1,4 @@
-"""إنشاء تقرير HTML من نتيجة التنبؤ والتوصيات."""
+"""Generate the HTML report content without writing it to the local filesystem."""
 
 from datetime import datetime
 from pathlib import Path
@@ -9,8 +9,6 @@ import uuid
 
 BASE_DIR = Path(__file__).resolve().parent
 TEMPLATE_PATH = BASE_DIR / "report_template.html"
-GENERATED_REPORTS_DIR = BASE_DIR / "generated_reports"
-GENERATED_REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
 RISK_AR = {
@@ -185,6 +183,12 @@ def generate_report(
     recommendations: list[dict[str, Any]],
     output_dir: str | Path | None = None,
 ) -> dict[str, str]:
+    """
+    Render the report as HTML text.
+
+    output_dir remains in the signature for backward compatibility only.
+    The report is no longer written to the local filesystem.
+    """
     required = {
         "bankruptcy_probability",
         "predicted_class",
@@ -274,28 +278,11 @@ def generate_report(
             value,
         )
 
-    target = (
-        Path(output_dir)
-        if output_dir
-        else GENERATED_REPORTS_DIR
-    )
-
-    target.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
-
     filename = f"{report_id}.html"
-    path = target / filename
-
-    path.write_text(
-        rendered,
-        encoding="utf-8",
-    )
 
     return {
         "report_id": report_id,
         "status": "generated",
         "filename": filename,
-        "report_path": str(path.resolve()),
+        "html_content": rendered,
     }

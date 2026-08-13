@@ -1,7 +1,4 @@
-"""اختبارات بسيطة لقسم التوصيات والتقارير."""
-
-import tempfile
-from pathlib import Path
+"""اختبارات قسم التوصيات وتوليد محتوى التقرير."""
 
 from decision_support.decision_support_service import process_prediction
 from decision_support.recommendations.recommendation_engine import generate_recommendations
@@ -45,7 +42,7 @@ def test_high_risk_escalation():
     assert "REC010" in ids
 
 
-def test_report_with_ml_factor_dicts():
+def test_report_html_is_returned_for_database_storage():
     company = {"id": 3, "name": "Test Company"}
     prediction = {
         "bankruptcy_probability": 0.0149,
@@ -55,14 +52,16 @@ def test_report_with_ml_factor_dicts():
         "top_risk_factors": TOP_FACTORS,
     }
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        result = process_prediction(company, prediction, output_dir=temp_dir)
-        report_path = Path(result["report"]["report_path"])
-        assert report_path.exists()
-        html_text = report_path.read_text(encoding="utf-8")
-        assert "Cash Ratio" in html_text
-        assert "Debt-to-Equity Ratio" in html_text
-        assert result["report"]["status"] == "generated"
+    result = process_prediction(company, prediction)
+
+    report = result["report"]
+    html_text = report["html_content"]
+
+    assert "Cash Ratio" in html_text
+    assert "Debt-to-Equity Ratio" in html_text
+    assert report["status"] == "generated"
+    assert report["filename"].endswith(".html")
+    assert "report_path" not in report
 
 
 def test_invalid_probability_rejected():

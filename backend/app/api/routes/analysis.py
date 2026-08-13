@@ -3,7 +3,7 @@
 import re
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -17,7 +17,7 @@ from app.services.analysis_history_service import (
 )
 from app.services.company_service import get_company_by_user
 from app.services.financial_record_service import get_company_financial_records
-from decision_support.reports.report_generator import GENERATED_REPORTS_DIR
+from app.services.report_service import get_report_by_report_id
 
 
 router = APIRouter(
@@ -65,25 +65,12 @@ class AnalysisRequest(BaseModel):
     yearly_ratios: YearlyRatios
 
 
-def _get_report_path(report_id: str):
+def _validate_report_id(report_id: str) -> None:
     if not REPORT_ID_PATTERN.fullmatch(report_id):
         raise HTTPException(
             status_code=400,
             detail="Invalid report id",
         )
-
-    report_path = (
-        GENERATED_REPORTS_DIR
-        / f"{report_id}.html"
-    )
-
-    if not report_path.is_file():
-        raise HTTPException(
-            status_code=404,
-            detail="Report not found",
-        )
-
-    return report_path
 
 
 def _check_report_access(
@@ -104,6 +91,24 @@ def _check_report_access(
         )
 
     return history
+
+
+def _get_database_report(
+    db: Session,
+    report_id: str,
+):
+    report = get_report_by_report_id(
+        db=db,
+        report_id=report_id,
+    )
+
+    if not report:
+        raise HTTPException(
+            status_code=404,
+            detail="Report not found",
+        )
+
+    return report
 
 
 @router.post("/run")
@@ -172,19 +177,22 @@ def view_report(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+    _validate_report_id(report_id)
+
     _check_report_access(
         db,
         report_id,
         current_user.id,
     )
 
-    report_path = _get_report_path(
-        report_id
+    report = _get_database_report(
+        db,
+        report_id,
     )
 
-    return FileResponse(
-        path=report_path,
-        media_type="text/html",
+    return HTMLResponse(
+        content=report.html_content,
+        status_code=200,
     )
 
 
@@ -194,18 +202,25 @@ def download_report(
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+    _validate_report_id(report_id)
+
     _check_report_access(
         db,
         report_id,
         current_user.id,
     )
 
-    report_path = _get_report_path(
-        report_id
+    report = _get_database_report(
+        db,
+        report_id,
     )
 
-    return FileResponse(
-        path=report_path,
+    return Response(
+        content=report.html_content,
         media_type="text/html",
-        filename=report_path.name,
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="{report.filename}"'
+            )
+        },
     )

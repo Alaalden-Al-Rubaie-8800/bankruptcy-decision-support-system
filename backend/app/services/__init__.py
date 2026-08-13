@@ -33,6 +33,10 @@ from app.services.recommendation_service import (
     get_recommendation,
     update_recommendation,
 )
+from app.services.report_service import (
+    create_report,
+    get_report_by_report_id,
+)
 from app.services.user_service import (
     create_user,
     delete_user,
@@ -66,6 +70,8 @@ __all__ = [
     "get_prediction_recommendations",
     "get_recommendation",
     "update_recommendation",
+    "create_report",
+    "get_report_by_report_id",
     "create_user",
     "delete_user",
     "get_user",

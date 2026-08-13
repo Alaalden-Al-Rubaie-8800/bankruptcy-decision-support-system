@@ -1,4 +1,4 @@
-"""اختبارات حماية عرض وتحميل تقارير التحليل."""
+"""اختبارات حماية عرض وتحميل تقارير التحليل المخزنة في PostgreSQL."""
 
 from types import SimpleNamespace
 
@@ -32,38 +32,30 @@ def set_current_user(user_id: int):
     ] = override_current_user
 
 
-def test_report_owner_can_view(
-    monkeypatch,
-    tmp_path,
-):
-    """صاحب التقرير يجب أن يستطيع فتح تقريره."""
+def _database_report(report_id: str):
+    return SimpleNamespace(
+        report_id=report_id,
+        filename=f"{report_id}.html",
+        html_content="<html><body>Test Report</body></html>",
+    )
 
+
+def test_report_owner_can_view(monkeypatch):
     report_id = "REP-20260813-ABCDEF12"
-
-    report_file = (
-        tmp_path / f"{report_id}.html"
-    )
-
-    report_file.write_text(
-        "<html><body>Test Report</body></html>",
-        encoding="utf-8",
-    )
-
-    monkeypatch.setattr(
-        analysis_routes,
-        "GENERATED_REPORTS_DIR",
-        tmp_path,
-    )
 
     monkeypatch.setattr(
         analysis_routes,
         "get_user_report_history",
-        lambda db, user_id, report_id: (
-            SimpleNamespace(
-                user_id=user_id,
-                report_id=report_id,
-            )
+        lambda db, user_id, report_id: SimpleNamespace(
+            user_id=user_id,
+            report_id=report_id,
         ),
+    )
+
+    monkeypatch.setattr(
+        analysis_routes,
+        "get_report_by_report_id",
+        lambda db, report_id: _database_report(report_id),
     )
 
     set_current_user(5)
@@ -76,11 +68,36 @@ def test_report_owner_can_view(
     assert "Test Report" in response.text
 
 
-def test_other_user_cannot_view_report(
-    monkeypatch,
-):
-    """مستخدم آخر يجب ألا يستطيع فتح التقرير."""
+def test_report_owner_can_download(monkeypatch):
+    report_id = "REP-20260813-ABCDEF12"
 
+    monkeypatch.setattr(
+        analysis_routes,
+        "get_user_report_history",
+        lambda db, user_id, report_id: SimpleNamespace(
+            user_id=user_id,
+            report_id=report_id,
+        ),
+    )
+
+    monkeypatch.setattr(
+        analysis_routes,
+        "get_report_by_report_id",
+        lambda db, report_id: _database_report(report_id),
+    )
+
+    set_current_user(5)
+
+    response = client.get(
+        f"/analysis/reports/{report_id}/download"
+    )
+
+    assert response.status_code == 200
+    assert "Test Report" in response.text
+    assert "attachment" in response.headers["content-disposition"]
+
+
+def test_other_user_cannot_view_report(monkeypatch):
     report_id = "REP-20260813-ABCDEF12"
 
     monkeypatch.setattr(
@@ -96,17 +113,12 @@ def test_other_user_cannot_view_report(
     )
 
     assert response.status_code == 404
-
     assert response.json() == {
         "detail": "Report not found"
     }
 
 
-def test_other_user_cannot_download_report(
-    monkeypatch,
-):
-    """مستخدم آخر يجب ألا يستطيع تحميل التقرير."""
-
+def test_other_user_cannot_download_report(monkeypatch):
     report_id = "REP-20260813-ABCDEF12"
 
     monkeypatch.setattr(
@@ -122,29 +134,13 @@ def test_other_user_cannot_download_report(
     )
 
     assert response.status_code == 404
-
     assert response.json() == {
         "detail": "Report not found"
     }
 
 
-def test_invalid_report_id_is_rejected(
-    monkeypatch,
-):
-    """يجب رفض report_id غير المطابق للصيغة المعتمدة."""
-
+def test_invalid_report_id_is_rejected(monkeypatch):
     invalid_report_id = "invalid-report-id"
-
-    monkeypatch.setattr(
-        analysis_routes,
-        "get_user_report_history",
-        lambda db, user_id, report_id: (
-            SimpleNamespace(
-                user_id=user_id,
-                report_id=report_id,
-            )
-        ),
-    )
 
     set_current_user(5)
 
@@ -153,7 +149,6 @@ def test_invalid_report_id_is_rejected(
     )
 
     assert response.status_code == 400
-
     assert response.json() == {
         "detail": "Invalid report id"
     }
