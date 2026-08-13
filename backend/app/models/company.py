@@ -20,6 +20,7 @@ class Company(Base):
     user_id: Mapped[int | None] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=True,
+        unique=True,
         index=True,
     )
 

@@ -1,5 +1,6 @@
 """خطوات AI Agent من قراءة البيانات حتى حفظ النتائج والتقرير."""
 
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.agents.state import AgentState
@@ -57,9 +58,9 @@ def validate_financial_data(state: AgentState) -> AgentState:
         state["error"] = "Financial data is missing"
         return state
 
-    if not yearly_ratios:
+    if not yearly_ratios or len(yearly_ratios) != 3:
         state["status"] = "failed"
-        state["error"] = "Three years of financial ratios are required"
+        state["error"] = "Exactly three years of financial ratios are required"
         return state
 
     required_fields = [
@@ -87,13 +88,14 @@ def validate_financial_data(state: AgentState) -> AgentState:
 def predict_bankruptcy(state: AgentState) -> AgentState:
     yearly_ratios = state.get("yearly_ratios")
 
-    if not yearly_ratios:
+    if not yearly_ratios or len(yearly_ratios) != 3:
         state["status"] = "failed"
-        state["error"] = "Three years of financial ratios are required"
+        state["error"] = "Exactly three years of financial ratios are required"
         return state
 
     try:
         result = analyze_financial_ratios(yearly_ratios)
+
         prediction = result["prediction"]
         explanation = result["explanation"]
 
@@ -194,34 +196,56 @@ def generate_recommendations(state: AgentState) -> AgentState:
 
 
 def save_analysis_results(state: AgentState, db: Session) -> AgentState:
-    prediction_data = PredictionCreate(
-        company_id=state["company_id"],
-        financial_record_id=state["financial_record_id"],
-        bankruptcy_probability=round(
-            state["bankruptcy_probability"],
-            4,
-        ),
-        risk_level=state["risk_level"],
-        model_version=state["model_version"],
-        explanation=state["explanation"],
-    )
+    required_values = [
+        state.get("company_id"),
+        state.get("financial_record_id"),
+        state.get("bankruptcy_probability"),
+        state.get("risk_level"),
+        state.get("model_version"),
+        state.get("explanation"),
+        state.get("recommendations"),
+    ]
 
-    prediction = create_prediction(db, prediction_data)
-    state["prediction_id"] = prediction.id
+    if any(value is None for value in required_values):
+        state["status"] = "failed"
+        state["error"] = "Analysis result data is incomplete"
+        return state
 
-    for item in state["recommendations"]:
-        recommendation_data = RecommendationCreate(
-            prediction_id=prediction.id,
-            title=item["title"],
-            description=item["description"],
-            priority=item["priority"],
-            action_category=item["action_category"],
+    try:
+        prediction_data = PredictionCreate(
+            company_id=state["company_id"],
+            financial_record_id=state["financial_record_id"],
+            bankruptcy_probability=round(
+                state["bankruptcy_probability"],
+                4,
+            ),
+            risk_level=state["risk_level"],
+            model_version=state["model_version"],
+            explanation=state["explanation"],
         )
 
-        create_recommendation(db, recommendation_data)
+        prediction = create_prediction(db, prediction_data)
+        state["prediction_id"] = prediction.id
 
-    state["status"] = "saved"
-    state["error"] = None
+        for item in state["recommendations"]:
+            recommendation_data = RecommendationCreate(
+                prediction_id=prediction.id,
+                title=item["title"],
+                description=item["description"],
+                priority=item["priority"],
+                action_category=item["action_category"],
+            )
+
+            create_recommendation(db, recommendation_data)
+
+        state["status"] = "saved"
+        state["error"] = None
+
+    except (SQLAlchemyError, ValueError, TypeError, KeyError) as exc:
+        db.rollback()
+        state["status"] = "failed"
+        state["error"] = f"Failed to save analysis results: {exc}"
+
     return state
 
 
@@ -233,17 +257,24 @@ def save_analysis_history(state: AgentState, db: Session) -> AgentState:
 
     report = state.get("report") or {}
 
-    history_data = AnalysisHistoryCreate(
-        user_id=state["user_id"],
-        company_id=state["company_id"],
-        financial_record_id=state["financial_record_id"],
-        prediction_id=state["prediction_id"],
-        report_id=report.get("report_id"),
-        status="completed",
-    )
+    try:
+        history_data = AnalysisHistoryCreate(
+            user_id=state["user_id"],
+            company_id=state["company_id"],
+            financial_record_id=state["financial_record_id"],
+            prediction_id=state["prediction_id"],
+            report_id=report.get("report_id"),
+            status="completed",
+        )
 
-    create_analysis_history(db, history_data)
+        create_analysis_history(db, history_data)
 
-    state["status"] = "completed"
-    state["error"] = None
+        state["status"] = "completed"
+        state["error"] = None
+
+    except (SQLAlchemyError, ValueError, TypeError, KeyError) as exc:
+        db.rollback()
+        state["status"] = "failed"
+        state["error"] = f"Failed to save analysis history: {exc}"
+
     return state

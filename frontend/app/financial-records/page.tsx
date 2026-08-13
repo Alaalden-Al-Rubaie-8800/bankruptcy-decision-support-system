@@ -1,13 +1,13 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import AppShell from "@/components/AppShell";
 import FinancialRecordsWorkspace from "@/components/FinancialRecordsWorkspace";
+import { backendFetch } from "@/lib/backend";
 
 export default async function FinancialRecordsPage() {
-  const cookieStore = await cookies();
+  const response = await backendFetch("/users/me");
 
-  if (!cookieStore.has("access_token")) {
+  if (!response.ok) {
     redirect("/login");
   }
 

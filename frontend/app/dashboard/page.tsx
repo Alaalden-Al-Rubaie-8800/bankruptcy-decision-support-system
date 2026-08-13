@@ -1,10 +1,23 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+
 import AppShell from "@/components/AppShell";
 import AnalysisWorkspace from "@/components/AnalysisWorkspace";
+import { backendFetch } from "@/lib/backend";
 
 export default async function DashboardPage() {
-  const cookieStore = await cookies();
-  if (!cookieStore.has("access_token")) redirect("/login");
-  return <AppShell><AnalysisWorkspace /></AppShell>;
+  const response = await backendFetch("/users/me");
+
+  if (response.status === 401) {
+    redirect("/login");
+  }
+
+  if (!response.ok) {
+    redirect("/login");
+  }
+
+  return (
+    <AppShell>
+      <AnalysisWorkspace />
+    </AppShell>
+  );
 }

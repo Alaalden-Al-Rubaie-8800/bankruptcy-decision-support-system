@@ -1,13 +1,13 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import AppShell from "@/components/AppShell";
 import CompanyForm from "@/components/CompanyForm";
+import { backendFetch } from "@/lib/backend";
 
 export default async function CompanyPage() {
-  const cookieStore = await cookies();
+  const response = await backendFetch("/users/me");
 
-  if (!cookieStore.has("access_token")) {
+  if (!response.ok) {
     redirect("/login");
   }
 
