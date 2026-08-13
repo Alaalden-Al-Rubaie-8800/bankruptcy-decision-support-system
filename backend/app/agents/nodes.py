@@ -231,11 +231,14 @@ def save_analysis_history(state: AgentState, db: Session) -> AgentState:
         state["error"] = "Analysis history data is missing"
         return state
 
+    report = state.get("report") or {}
+
     history_data = AnalysisHistoryCreate(
         user_id=state["user_id"],
         company_id=state["company_id"],
         financial_record_id=state["financial_record_id"],
         prediction_id=state["prediction_id"],
+        report_id=report.get("report_id"),
         status="completed",
     )
 

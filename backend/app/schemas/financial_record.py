@@ -1,12 +1,12 @@
+"""Schemas الخاصة بالسجلات المالية للشركات."""
+
 from datetime import datetime
 from decimal import Decimal
+
 from pydantic import BaseModel, ConfigDict, Field
 
-class FinancialRecordBase(BaseModel):
-    company_id: int = Field(
-        gt=0,
-    )
 
+class FinancialValues(BaseModel):
     fiscal_year: int = Field(
         ge=2000,
         le=2100,
@@ -52,8 +52,16 @@ class FinancialRecordBase(BaseModel):
         decimal_places=2,
     )
 
-class FinancialRecordCreate(FinancialRecordBase):
+
+class FinancialRecordAccountCreate(FinancialValues):
     pass
+
+
+class FinancialRecordCreate(FinancialValues):
+    company_id: int = Field(
+        gt=0,
+    )
+
 
 class FinancialRecordUpdate(BaseModel):
     fiscal_year: int | None = Field(
@@ -109,8 +117,12 @@ class FinancialRecordUpdate(BaseModel):
         decimal_places=2,
     )
 
-class FinancialRecordResponse(FinancialRecordBase):
+
+class FinancialRecordResponse(FinancialValues):
     id: int
+    company_id: int
     created_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(
+        from_attributes=True,
+    )

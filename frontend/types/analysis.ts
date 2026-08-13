@@ -63,6 +63,7 @@ export interface AnalysisHistoryItem {
   company_id: number;
   financial_record_id: number;
   prediction_id: number;
+  report_id: string | null;
   status: string;
   created_at: string;
 }

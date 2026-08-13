@@ -11,15 +11,24 @@ from app.agents.workflow import run_agent
 from app.core.dependencies import get_current_user
 from app.database.session import get_db
 from app.schemas.analysis_history import AnalysisHistoryResponse
-from app.services.analysis_history_service import get_user_analysis_history
+from app.services.analysis_history_service import (
+    get_user_analysis_history,
+    get_user_report_history,
+)
+from app.services.company_service import get_company_by_user
+from app.services.financial_record_service import get_company_financial_records
 from decision_support.reports.report_generator import GENERATED_REPORTS_DIR
+
 
 router = APIRouter(
     prefix="/analysis",
     tags=["Analysis"],
 )
 
-REPORT_ID_PATTERN = re.compile(r"^REP-\d{8}-[A-F0-9]{8}$")
+
+REPORT_ID_PATTERN = re.compile(
+    r"^REP-\d{8}-[A-F0-9]{8}$"
+)
 
 
 class FinancialRatios(BaseModel):
@@ -53,7 +62,6 @@ class YearlyRatios(BaseModel):
 
 
 class AnalysisRequest(BaseModel):
-    financial_record_id: int
     yearly_ratios: YearlyRatios
 
 
@@ -64,7 +72,10 @@ def _get_report_path(report_id: str):
             detail="Invalid report id",
         )
 
-    report_path = GENERATED_REPORTS_DIR / f"{report_id}.html"
+    report_path = (
+        GENERATED_REPORTS_DIR
+        / f"{report_id}.html"
+    )
 
     if not report_path.is_file():
         raise HTTPException(
@@ -75,14 +86,58 @@ def _get_report_path(report_id: str):
     return report_path
 
 
+def _check_report_access(
+    db: Session,
+    report_id: str,
+    user_id: int,
+):
+    history = get_user_report_history(
+        db=db,
+        user_id=user_id,
+        report_id=report_id,
+    )
+
+    if not history:
+        raise HTTPException(
+            status_code=404,
+            detail="Report not found",
+        )
+
+    return history
+
+
 @router.post("/run")
 def run_analysis(
     data: AnalysisRequest,
     db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+    company = get_company_by_user(
+        db,
+        current_user.id,
+    )
+
+    if not company:
+        raise HTTPException(
+            status_code=400,
+            detail="Create your company first",
+        )
+
+    financial_records = get_company_financial_records(
+        db,
+        company.id,
+    )
+
+    if not financial_records:
+        raise HTTPException(
+            status_code=400,
+            detail="No financial records found for your company",
+        )
+
+    latest_record = financial_records[0]
+
     result = run_agent(
-        financial_record_id=data.financial_record_id,
+        financial_record_id=latest_record.id,
         user_id=current_user.id,
         yearly_ratios=data.yearly_ratios.model_dump(),
         db=db,
@@ -114,9 +169,18 @@ def get_analysis_history(
 @router.get("/reports/{report_id}")
 def view_report(
     report_id: str,
+    db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    report_path = _get_report_path(report_id)
+    _check_report_access(
+        db,
+        report_id,
+        current_user.id,
+    )
+
+    report_path = _get_report_path(
+        report_id
+    )
 
     return FileResponse(
         path=report_path,
@@ -127,9 +191,18 @@ def view_report(
 @router.get("/reports/{report_id}/download")
 def download_report(
     report_id: str,
+    db: Session = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    report_path = _get_report_path(report_id)
+    _check_report_access(
+        db,
+        report_id,
+        current_user.id,
+    )
+
+    report_path = _get_report_path(
+        report_id
+    )
 
     return FileResponse(
         path=report_path,

@@ -1,10 +1,19 @@
+"""خدمات إنشاء الشركات واسترجاعها وتحديثها."""
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+
 from app.models.company import Company
 from app.schemas.company import CompanyCreate, CompanyUpdate
 
-def create_company(db: Session, company_data: CompanyCreate) -> Company:
+
+def create_company(
+    db: Session,
+    company_data: CompanyCreate,
+    user_id: int,
+) -> Company:
     company = Company(
+        user_id=user_id,
         name=company_data.name,
         industry=company_data.industry,
         registration_number=company_data.registration_number,
@@ -16,9 +25,28 @@ def create_company(db: Session, company_data: CompanyCreate) -> Company:
 
     return company
 
-def get_company(db: Session, company_id: int) -> Company | None:
-    statement = select(Company).where(Company.id == company_id)
+
+def get_company(
+    db: Session,
+    company_id: int,
+) -> Company | None:
+    statement = select(Company).where(
+        Company.id == company_id
+    )
+
     return db.scalar(statement)
+
+
+def get_company_by_user(
+    db: Session,
+    user_id: int,
+) -> Company | None:
+    statement = select(Company).where(
+        Company.user_id == user_id
+    )
+
+    return db.scalar(statement)
+
 
 def get_companies(
     db: Session,
@@ -34,12 +62,15 @@ def get_companies(
 
     return list(db.scalars(statement).all())
 
+
 def update_company(
     db: Session,
     company: Company,
     company_data: CompanyUpdate,
 ) -> Company:
-    update_data = company_data.model_dump(exclude_unset=True)
+    update_data = company_data.model_dump(
+        exclude_unset=True
+    )
 
     for field, value in update_data.items():
         setattr(company, field, value)
@@ -49,6 +80,7 @@ def update_company(
     db.refresh(company)
 
     return company
+
 
 def delete_company(
     db: Session,
