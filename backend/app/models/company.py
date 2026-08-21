@@ -1,7 +1,12 @@
+"""نموذج الشركة وربطها بالمستخدم صاحب الحساب."""
+
 from datetime import datetime
-from sqlalchemy import DateTime, Integer, String, func
+
+from sqlalchemy import DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column
+
 from app.database.session import Base
+
 
 class Company(Base):
     __tablename__ = "companies"
@@ -9,6 +14,13 @@ class Company(Base):
     id: Mapped[int] = mapped_column(
         Integer,
         primary_key=True,
+        index=True,
+    )
+
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=True,
+        unique=True,
         index=True,
     )
 

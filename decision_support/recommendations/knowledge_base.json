@@ -2,69 +2,98 @@
   "REC001": {
     "title_ar": "مراجعة مالية عاجلة",
     "description_ar": "إجراء مراجعة شاملة للوضع المالي وتحديد مصادر الضغط المالي الرئيسية.",
+    "title_en": "Urgent Financial Review",
+    "description_en": "Conduct a comprehensive review of the financial position and identify the main sources of financial pressure.",
     "priority": 1,
     "time_horizon": "immediate",
     "category": "financial_review"
   },
+
   "REC002": {
     "title_ar": "مراجعة السيولة والتدفقات النقدية",
     "description_ar": "تحليل التدفقات النقدية وتحديد فجوات السيولة قصيرة الأجل.",
+    "title_en": "Review Liquidity and Cash Flow",
+    "description_en": "Analyze cash flows and identify short-term liquidity gaps.",
     "priority": 2,
     "time_horizon": "short_term",
     "category": "liquidity"
   },
+
   "REC003": {
     "title_ar": "تقييم الالتزامات قصيرة الأجل",
     "description_ar": "مراجعة الالتزامات المستحقة وترتيبها حسب الأولوية ودراسة إعادة الجدولة.",
+    "title_en": "Assess Short-Term Liabilities",
+    "description_en": "Review upcoming liabilities, prioritize obligations, and evaluate possible rescheduling options.",
     "priority": 3,
     "time_horizon": "short_term",
     "category": "liabilities"
   },
+
   "REC004": {
     "title_ar": "مراقبة المؤشرات المالية دوريًا",
     "description_ar": "إعادة التحليل بشكل دوري ومقارنة اتجاه مؤشرات الخطر.",
+    "title_en": "Monitor Financial Indicators Regularly",
+    "description_en": "Repeat the analysis periodically and compare changes in financial risk indicators over time.",
     "priority": 4,
     "time_horizon": "ongoing",
     "category": "monitoring"
   },
+
   "REC005": {
     "title_ar": "إعداد خطة تصحيح مالي",
     "description_ar": "وضع خطة إجراءات قابلة للقياس لتحسين الاستقرار المالي وتقليل المخاطر.",
+    "title_en": "Develop a Financial Corrective Plan",
+    "description_en": "Create measurable corrective actions to improve financial stability and reduce financial risk.",
     "priority": 2,
     "time_horizon": "short_term",
     "category": "corrective_plan"
   },
+
   "REC006": {
     "title_ar": "تصعيد الحالة للإدارة المالية العليا",
     "description_ar": "مراجعة الحالة من الإدارة المالية وصناع القرار بشكل عاجل.",
+    "title_en": "Escalate the Case to Senior Financial Management",
+    "description_en": "Escalate the case for urgent review by senior financial management and key decision-makers.",
     "priority": 1,
     "time_horizon": "immediate",
     "category": "escalation"
   },
+
   "REC007": {
     "title_ar": "الاستمرار في المراقبة الدورية",
     "description_ar": "الاستمرار في متابعة المؤشرات وإعادة التقييم عند توفر بيانات أحدث.",
+    "title_en": "Continue Regular Monitoring",
+    "description_en": "Continue monitoring financial indicators and repeat the assessment when more recent data becomes available.",
     "priority": 4,
     "time_horizon": "ongoing",
     "category": "monitoring"
   },
+
   "REC008": {
     "title_ar": "الحفاظ على الانضباط المالي",
     "description_ar": "الحفاظ على سياسات السيولة والالتزامات الحالية مع مراقبة أي تدهور.",
+    "title_en": "Maintain Financial Discipline",
+    "description_en": "Maintain current liquidity and liability management practices while monitoring for signs of financial deterioration.",
     "priority": 5,
     "time_horizon": "ongoing",
     "category": "stability"
   },
+
   "REC009": {
     "title_ar": "زيادة تكرار المراجعة المالية",
     "description_ar": "رفع وتيرة مراجعة المؤشرات للتأكد من عدم انتقال الحالة إلى خطر مرتفع.",
+    "title_en": "Increase the Frequency of Financial Reviews",
+    "description_en": "Review financial indicators more frequently to detect early signs of transition toward a higher risk level.",
     "priority": 3,
     "time_horizon": "short_term",
     "category": "monitoring"
   },
+
   "REC010": {
     "title_ar": "إعداد سيناريو طوارئ مالي",
     "description_ar": "إعداد سيناريوهات بديلة للتعامل مع نقص السيولة أو ارتفاع الالتزامات.",
+    "title_en": "Prepare a Financial Contingency Plan",
+    "description_en": "Prepare alternative financial scenarios to address potential liquidity shortages or increases in financial obligations.",
     "priority": 2,
     "time_horizon": "immediate",
     "category": "contingency"

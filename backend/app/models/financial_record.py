@@ -1,11 +1,22 @@
 from datetime import datetime
 from decimal import Decimal
-from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, func
+
+from sqlalchemy import DateTime, ForeignKey, Integer, Numeric, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column
+
 from app.database.session import Base
+
 
 class FinancialRecord(Base):
     __tablename__ = "financial_records"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "company_id",
+            "fiscal_year",
+            name="uq_financial_records_company_fiscal_year",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(
         Integer,

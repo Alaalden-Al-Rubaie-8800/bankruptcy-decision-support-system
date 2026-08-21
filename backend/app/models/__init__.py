@@ -5,6 +5,7 @@ from app.models.company import Company
 from app.models.financial_record import FinancialRecord
 from app.models.prediction import Prediction
 from app.models.recommendation import Recommendation
+from app.models.report import Report
 from app.models.user import User
 
 __all__ = [
@@ -13,5 +14,6 @@ __all__ = [
     "FinancialRecord",
     "Prediction",
     "Recommendation",
+    "Report",
     "User",
 ]
