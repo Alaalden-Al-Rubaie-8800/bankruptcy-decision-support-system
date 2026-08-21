@@ -12,30 +12,30 @@ import {
 const navItems = [
   {
     href: "/dashboard",
-    label: "لوحة التحليل",
+    label: "Dashboard",
   },
   {
     href: "/history",
-    label: "سجل التحليلات",
+    label: "Analysis History",
   },
   {
     href: "/company",
-    label: "بيانات الشركة",
+    label: "Company Information",
   },
   {
     href: "/financial-records",
-    label: "السجلات المالية",
+    label: "Financial Records",
   },
   {
     href: "/account",
-    label: "حسابي",
+    label: "My Account",
   },
 ];
 
 
 const adminNavItem = {
   href: "/admin",
-  label: "لوحة الإدارة",
+  label: "Admin Panel",
 };
 
 
@@ -114,14 +114,14 @@ export default function AppShell({
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <aside className="fixed right-0 top-0 hidden h-screen w-72 border-l border-slate-800 bg-slate-950 px-5 py-7 text-white lg:block">
+      <aside className="fixed left-0 top-0 hidden h-screen w-72 border-r border-slate-800 bg-slate-950 px-5 py-7 text-white lg:block">
         <div className="mb-8">
           <p className="text-xs font-semibold text-sky-300">
-            AI Decision Support
+            Decision Support System
           </p>
 
           <h1 className="mt-2 text-lg font-bold leading-7">
-            نظام التنبؤ المبكر بمخاطر الإفلاس
+            Bankruptcy Risk Prediction
           </h1>
         </div>
 
@@ -143,24 +143,15 @@ export default function AppShell({
             )
           )}
         </nav>
-
-
-        <div className="absolute bottom-6 left-5 right-5 rounded-xl border border-slate-800 bg-slate-900 p-4 text-xs leading-6 text-slate-300">
-          ML + XAI + LangGraph Agent + Decision Support
-        </div>
       </aside>
 
 
-      <main className="lg:mr-72">
+      <main className="lg:ml-72">
         <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-4 py-4 backdrop-blur md:px-8">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
             <div className="min-w-0">
-              <p className="hidden text-sm text-slate-500 sm:block">
-                نظام دعم قرار ذكي للشركات الصناعية الصغيرة والمتوسطة
-              </p>
-
-              <p className="truncate text-sm font-bold sm:text-base">
-                تحليل مخاطر الإفلاس والتوصيات الوقائية
+              <p className="truncate text-base font-bold text-slate-900">
+                Financial Decision Support
               </p>
             </div>
 
@@ -177,8 +168,8 @@ export default function AppShell({
                 }
               >
                 {menuOpen
-                  ? "إغلاق"
-                  : "القائمة"}
+                  ? "Close"
+                  : "Menu"}
               </button>
 
 
@@ -189,8 +180,8 @@ export default function AppShell({
                 onClick={logout}
               >
                 {busy
-                  ? "جارٍ الخروج..."
-                  : "تسجيل الخروج"}
+                  ? "Signing out..."
+                  : "Sign Out"}
               </button>
             </div>
           </div>

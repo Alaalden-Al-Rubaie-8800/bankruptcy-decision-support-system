@@ -146,6 +146,7 @@ def explain_prediction(state: AgentState) -> AgentState:
 
 def generate_recommendations(state: AgentState) -> AgentState:
     company = state.get("company_data")
+    report_language = state.get("report_language", "en")
 
     required_values = [
         state.get("bankruptcy_probability"),
@@ -172,6 +173,7 @@ def generate_recommendations(state: AgentState) -> AgentState:
         result = process_prediction(
             company=company,
             prediction=prediction,
+            report_language=report_language,
         )
 
         state["recommendations"] = result["recommendations"]

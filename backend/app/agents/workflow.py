@@ -1,5 +1,7 @@
 """تشغيل AI Agent باستخدام LangGraph مع حفظ النتائج وسجل التحليل."""
 
+from typing import Literal
+
 from langgraph.graph import END, START, StateGraph
 from sqlalchemy.orm import Session
 
@@ -27,7 +29,10 @@ def build_agent(db: Session):
 
     graph.add_node(
         "load_financial_data",
-        lambda state: load_financial_data(state, db),
+        lambda state: load_financial_data(
+            state,
+            db,
+        ),
     )
 
     graph.add_node(
@@ -52,15 +57,24 @@ def build_agent(db: Session):
 
     graph.add_node(
         "save_analysis_results",
-        lambda state: save_analysis_results(state, db),
+        lambda state: save_analysis_results(
+            state,
+            db,
+        ),
     )
 
     graph.add_node(
         "save_analysis_history",
-        lambda state: save_analysis_history(state, db),
+        lambda state: save_analysis_history(
+            state,
+            db,
+        ),
     )
 
-    graph.add_edge(START, "load_financial_data")
+    graph.add_edge(
+        START,
+        "load_financial_data",
+    )
 
     graph.add_conditional_edges(
         "load_financial_data",
@@ -116,7 +130,10 @@ def build_agent(db: Session):
         },
     )
 
-    graph.add_edge("save_analysis_history", END)
+    graph.add_edge(
+        "save_analysis_history",
+        END,
+    )
 
     return graph.compile()
 
@@ -124,17 +141,48 @@ def build_agent(db: Session):
 def run_agent(
     financial_record_id: int,
     user_id: int,
-    yearly_ratios: dict[str, dict[str, float | None]],
-    db: Session,
+    yearly_ratios: dict[
+        str,
+        dict[str, float | None],
+    ],
+    report_language: Literal[
+        "en",
+        "ar",
+    ] = "en",
+    db: Session | None = None,
 ) -> AgentState:
-    agent = build_agent(db)
+    if db is None:
+        raise ValueError(
+            "Database session is required"
+        )
+
+    agent = build_agent(
+        db
+    )
 
     state: AgentState = {
-        "user_id": user_id,
-        "financial_record_id": financial_record_id,
-        "yearly_ratios": yearly_ratios,
-        "status": "started",
-        "error": None,
+        "user_id":
+            user_id,
+
+        "financial_record_id":
+            financial_record_id,
+
+        "yearly_ratios":
+            yearly_ratios,
+
+        # Presentation setting only.
+        # Does not affect prediction,
+        # XAI, or recommendation logic.
+        "report_language":
+            report_language,
+
+        "status":
+            "started",
+
+        "error":
+            None,
     }
 
-    return agent.invoke(state)
+    return agent.invoke(
+        state
+    )

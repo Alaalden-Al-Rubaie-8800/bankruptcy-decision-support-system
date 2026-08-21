@@ -24,21 +24,7 @@ export default async function AdminPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-6xl space-y-6">
-        <section>
-          <p className="eyebrow">
-            Admin Panel
-          </p>
-
-          <h1 className="page-title">
-            لوحة الإدارة
-          </h1>
-
-          <p className="page-subtitle">
-            إدارة المستخدمين والحسابات داخل النظام.
-          </p>
-        </section>
-
+      <div className="mx-auto max-w-6xl">
         <AdminUsersTable />
       </div>
     </AppShell>

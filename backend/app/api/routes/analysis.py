@@ -1,6 +1,7 @@
 """مسارات تشغيل التحليل وعرض السجل والتقارير."""
 
 import re
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import HTMLResponse, Response
@@ -16,7 +17,9 @@ from app.services.analysis_history_service import (
     get_user_report_history,
 )
 from app.services.company_service import get_company_by_user
-from app.services.financial_record_service import get_company_financial_records
+from app.services.financial_record_service import (
+    get_company_financial_records,
+)
 from app.services.report_service import get_report_by_report_id
 
 
@@ -64,9 +67,17 @@ class YearlyRatios(BaseModel):
 class AnalysisRequest(BaseModel):
     yearly_ratios: YearlyRatios
 
+    # Report presentation language only.
+    # This does not change the analysis workflow.
+    report_language: Literal["en", "ar"] = "en"
 
-def _validate_report_id(report_id: str) -> None:
-    if not REPORT_ID_PATTERN.fullmatch(report_id):
+
+def _validate_report_id(
+    report_id: str,
+) -> None:
+    if not REPORT_ID_PATTERN.fullmatch(
+        report_id
+    ):
         raise HTTPException(
             status_code=400,
             detail="Invalid report id",
@@ -115,7 +126,9 @@ def _get_database_report(
 def run_analysis(
     data: AnalysisRequest,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(
+        get_current_user
+    ),
 ):
     company = get_company_by_user(
         db,
@@ -128,30 +141,49 @@ def run_analysis(
             detail="Create your company first",
         )
 
-    financial_records = get_company_financial_records(
-        db,
-        company.id,
+    financial_records = (
+        get_company_financial_records(
+            db,
+            company.id,
+        )
     )
 
     if not financial_records:
         raise HTTPException(
             status_code=400,
-            detail="No financial records found for your company",
+            detail=(
+                "No financial records found "
+                "for your company"
+            ),
         )
 
-    latest_record = financial_records[0]
+    latest_record = (
+        financial_records[0]
+    )
 
     result = run_agent(
-        financial_record_id=latest_record.id,
+        financial_record_id=(
+            latest_record.id
+        ),
         user_id=current_user.id,
-        yearly_ratios=data.yearly_ratios.model_dump(),
+        yearly_ratios=(
+            data.yearly_ratios.model_dump()
+        ),
+        report_language=(
+            data.report_language
+        ),
         db=db,
     )
 
-    if result.get("status") == "failed":
+    if (
+        result.get("status")
+        == "failed"
+    ):
         raise HTTPException(
             status_code=400,
-            detail=result.get("error"),
+            detail=result.get(
+                "error"
+            ),
         )
 
     return result
@@ -159,11 +191,15 @@ def run_analysis(
 
 @router.get(
     "/history",
-    response_model=list[AnalysisHistoryResponse],
+    response_model=list[
+        AnalysisHistoryResponse
+    ],
 )
 def get_analysis_history(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(
+        get_current_user
+    ),
 ):
     return get_user_analysis_history(
         db,
@@ -171,13 +207,19 @@ def get_analysis_history(
     )
 
 
-@router.get("/reports/{report_id}")
+@router.get(
+    "/reports/{report_id}"
+)
 def view_report(
     report_id: str,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(
+        get_current_user
+    ),
 ):
-    _validate_report_id(report_id)
+    _validate_report_id(
+        report_id
+    )
 
     _check_report_access(
         db,
@@ -191,18 +233,26 @@ def view_report(
     )
 
     return HTMLResponse(
-        content=report.html_content,
+        content=(
+            report.html_content
+        ),
         status_code=200,
     )
 
 
-@router.get("/reports/{report_id}/download")
+@router.get(
+    "/reports/{report_id}/download"
+)
 def download_report(
     report_id: str,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    current_user=Depends(
+        get_current_user
+    ),
 ):
-    _validate_report_id(report_id)
+    _validate_report_id(
+        report_id
+    )
 
     _check_report_access(
         db,
@@ -216,11 +266,14 @@ def download_report(
     )
 
     return Response(
-        content=report.html_content,
+        content=(
+            report.html_content
+        ),
         media_type="text/html",
         headers={
             "Content-Disposition": (
-                f'attachment; filename="{report.filename}"'
+                f'attachment; '
+                f'filename="{report.filename}"'
             )
         },
     )

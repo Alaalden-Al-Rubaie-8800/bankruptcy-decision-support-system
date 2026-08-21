@@ -2,13 +2,18 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "نظام دعم القرار لمخاطر الإفلاس",
-  description: "AI-powered bankruptcy risk prediction and preventive decision support",
+  title: "Bankruptcy Risk Prediction System",
+  description:
+    "Bankruptcy risk prediction and financial decision support system",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="en" dir="ltr">
       <body>{children}</body>
     </html>
   );

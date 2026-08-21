@@ -10,6 +10,7 @@ def process_prediction(
     company: dict[str, Any],
     prediction: dict[str, Any],
     output_dir: str | None = None,
+    report_language: str = "en",
 ) -> dict[str, Any]:
     recommendations = generate_recommendations(
         bankruptcy_probability=prediction["bankruptcy_probability"],
@@ -22,6 +23,7 @@ def process_prediction(
         prediction=prediction,
         recommendations=recommendations,
         output_dir=output_dir,
+        language=report_language,
     )
 
     return {
