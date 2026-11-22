@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>تقرير تقييم مخاطر الإفلاس</title>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+body{
+  font-family:Tahoma,Arial,sans-serif;
+  background:#f4f7fb;
+  color:#1f2937;
+  margin:0;
+  line-height:1.8;
+}
+
+.container{
+  max-width:950px;
+  margin:35px auto;
+  background:#ffffff;
+  padding:40px;
+  border-radius:18px;
+  box-shadow:0 8px 25px rgba(0,0,0,.08);
+}
+
+h1{
+  margin:0 0 8px;
+  color:#0f3d63;
+  font-size:34px;
+  line-height:1.4;
+}
+
+h2{
+  color:#0f3d63;
+  margin-top:32px;
+  margin-bottom:14px;
+  font-size:24px;
+}
+
+.meta{
+  color:#6b7280;
+  margin-bottom:24px;
+  font-size:14px;
+}
+
+.company-info{
+  background:#f8fafc;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  padding:16px 20px;
+}
+
+.company-info p{
+  margin:6px 0;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+  margin:24px 0;
+}
+
+.card{
+  min-height:135px;
+  padding:20px 16px;
+  border-radius:14px;
+  background:#f8fafc;
+  border:1px solid #e5e7eb;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+
+.card-title{
+  color:#475569;
+  font-size:15px;
+  font-weight:bold;
+  margin-bottom:8px;
+}
+
+.value{
+  font-size:27px;
+  font-weight:bold;
+  line-height:1.45;
+  overflow-wrap:anywhere;
+}
+
+.classification-value{
+  font-size:22px;
+  max-width:220px;
+}
+
+.low{
+  color:#15803d;
+}
+
+.medium{
+  color:#b45309;
+}
+
+.high{
+  color:#b91c1c;
+}
+
+ul{
+  margin:8px 0;
+  padding-right:24px;
+}
+
+li{
+  margin:8px 0;
+  line-height:1.9;
+}
+
+.recommendation{
+  border-right:5px solid #0f3d63;
+  padding:16px 18px;
+  margin:14px 0;
+  background:#f8fafc;
+  border-radius:10px;
+  border-top:1px solid #e5e7eb;
+  border-bottom:1px solid #e5e7eb;
+  border-left:1px solid #e5e7eb;
+}
+
+.recommendation strong{
+  display:block;
+  color:#0f2740;
+  font-size:18px;
+  margin-bottom:6px;
+}
+
+.recommendation div{
+  margin-bottom:6px;
+}
+
+.recommendation small{
+  color:#64748b;
+  font-size:13px;
+}
+
+.footer{
+  margin-top:38px;
+  padding-top:18px;
+  border-top:1px solid #e5e7eb;
+  color:#6b7280;
+  font-size:12px;
+  text-align:center;
+}
+
+@media(max-width:700px){
+  .container{
+    margin:0;
+    padding:22px;
+    border-radius:0;
+  }
+
+  h1{
+    font-size:28px;
+  }
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .card{
+    min-height:auto;
+  }
+}
+
+@media print{
+  body{
+    background:white;
+  }
+
+  .container{
+    max-width:none;
+    margin:0;
+    padding:20px;
+    box-shadow:none;
+    border-radius:0;
+  }
+
+  .recommendation,
+  .card{
+    break-inside:avoid;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<main class="container">
+
+<h1>تقرير تقييم مخاطر الإفلاس</h1>
+
+<div class="meta">
+  رقم التقرير: REP-20260813-E43CA6D5
+  |
+  تاريخ الإنشاء: 2026-08-13 06:08:35
+</div>
+
+<h2>بيانات الشركة</h2>
+
+<div class="company-info">
+  <p>
+    <strong>اسم الشركة:</strong>
+    شركة الرباعي الصناعية
+  </p>
+
+  <p>
+    <strong>معرف الشركة:</strong>
+    5
+  </p>
+</div>
+
+<div class="grid">
+
+  <div class="card">
+    <div class="card-title">احتمال الإفلاس</div>
+    <div class="value">
+      1.50%
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">مستوى الخطر</div>
+    <div class="value low">
+      منخفض
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">التصنيف</div>
+    <div class="value classification-value">
+      غير معرض لخطر الإفلاس
+    </div>
+  </div>
+
+</div>
+
+<h2>أهم عوامل الخطر</h2>
+
+<ul><li>نسبة تغطية خدمة الدين (DCR) - أحدث سنة | الملاءة المالية | القيمة: 1.0</li><li>إنتاجية العمل (LP) - السنة السابقة | الربحية | القيمة: 0.18</li><li>أيام تحصيل الذمم المدينة (DTR) - أحدث سنة | النشاط | القيمة: 0.55</li><li>أيام دوران الأصول (ATD) - السنة السابقة | النشاط | القيمة: 0.58</li><li>العائد على حقوق الملكية (ROE) - السنة الأقدم | الربحية | القيمة: 0.08</li></ul>
+
+<h2>التوصيات الوقائية</h2>
+
+<div class='recommendation'><strong>إعداد خطة تصحيح مالي</strong><div>وضع خطة إجراءات قابلة للقياس لتحسين الاستقرار المالي وتقليل المخاطر.</div><small>الأولوية: مرتفع | الإطار الزمني: قصير الأجل | الفئة: الخطة التصحيحية</small></div><div class='recommendation'><strong>تقييم الالتزامات قصيرة الأجل</strong><div>مراجعة الالتزامات المستحقة وترتيبها حسب الأولوية ودراسة إعادة الجدولة.</div><small>الأولوية: متوسط | الإطار الزمني: قصير الأجل | الفئة: الالتزامات</small></div><div class='recommendation'><strong>مراقبة المؤشرات المالية دوريًا</strong><div>إعادة التحليل بشكل دوري ومقارنة اتجاه مؤشرات الخطر.</div><small>الأولوية: منخفض | الإطار الزمني: مستمر | الفئة: المراقبة</small></div><div class='recommendation'><strong>الاستمرار في المراقبة الدورية</strong><div>الاستمرار في متابعة المؤشرات وإعادة التقييم عند توفر بيانات أحدث.</div><small>الأولوية: منخفض | الإطار الزمني: مستمر | الفئة: المراقبة</small></div><div class='recommendation'><strong>الحفاظ على الانضباط المالي</strong><div>الحفاظ على سياسات السيولة والالتزامات الحالية مع مراقبة أي تدهور.</div><small>الأولوية: منخفض | الإطار الزمني: مستمر | الفئة: الاستقرار المالي</small></div>
+
+<div class="footer">
+  هذا التقرير أداة دعم قرار تعليمية ولا يمثل قرارًا ماليًا أو قانونيًا نهائيًا.
+</div>
+
+</main>
+
+</body>
+</html>
